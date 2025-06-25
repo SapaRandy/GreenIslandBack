@@ -33,7 +33,6 @@ google-api-python-client~=2.173.0
 pyasn1_modules~=0.4.2
 cachetools~=5.5.2
 certifi~=2025.6.15
-urllib3~=1.26.20
 packaging~=25.0
 google-crc32c~=1.7.1
 grpcio-status~=1.73.0
