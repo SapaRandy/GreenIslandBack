@@ -1,3 +1,12 @@
 .env
 serviceAccountKey.json
-/venv
+
+venv/
+*.sqlite3
+# Fichiers de migration compilés
+*.pyc
+__pycache__/
+
+# Fichiers spécifiques à l’IDE
+.vscode/
+.idea/
