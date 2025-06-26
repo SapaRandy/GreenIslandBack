@@ -7,6 +7,5 @@ venv/
 *.pyc
 __pycache__/
 
-# Fichiers spécifiques à l’IDE
-.vscode/
-.idea/
+vscode/
+idea/
