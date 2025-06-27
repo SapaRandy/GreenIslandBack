@@ -30,8 +30,13 @@ class PlantIdentifyView(APIView):
 
         data = response.json()
         try:
-            common_names = data['results'][0]['species'].get('commonNames', [])
-            best_match = common_names[0] if common_names else None
+            vernacular_names = data['results'][0]['species'].get('vernacularNames', [])
+            french_names = [name['name'] for name in vernacular_names if name.get('language') == 'fr']
+            best_match = french_names[0] if french_names else None
+
+            if not best_match:
+                common_names = data['results'][0]['species'].get('commonNames', [])
+                best_match = common_names[0] if common_names else None
         except (KeyError, IndexError):
             best_match = None
 
@@ -118,6 +123,17 @@ class WeatherWeekAPIView(APIView):
 
 class ArduinoDataView(APIView):
     def post(self, request):
-        valeur = request.data.get('valeur')
-        print(f"Valeur reçue de l'Arduino: {valeur}")
-        return Response({'message': 'Donnée reçue'}, status=200)
+        temperature = request.data.get('temperature')
+        humidite = request.data.get('humidite')
+        pression = request.data.get('pression')
+        sol = request.data.get('sol')
+        niveau_eau = request.data.get('niveau_eau')
+
+        print(f"Température: {temperature} °C")
+        print(f"Humidité: {humidite} %")
+        print(f"Pression: {pression} hPa")
+        print(f"Humidité sol: {sol} %")
+        print(f"Niveau d'eau: {niveau_eau} cm")
+
+
+        return Response({'message': 'Données reçues'}, status=200)
