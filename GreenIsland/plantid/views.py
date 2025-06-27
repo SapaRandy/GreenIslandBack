@@ -30,7 +30,8 @@ class PlantIdentifyView(APIView):
 
         data = response.json()
         try:
-            best_match = data['results'][0]['species']['scientificNameWithoutAuthor']
+            common_names = data['results'][0]['species'].get('commonNames', [])
+            best_match = common_names[0] if common_names else None
         except (KeyError, IndexError):
             best_match = None
 
