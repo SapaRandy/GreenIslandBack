@@ -26,7 +26,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get("DEBUG","False").lower() ==  "true"
 SECRET_KEY = os.environ.get("SECRET_KEY","change-me")
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(' ')
+ALLOWED_HOSTS = [
+    'greenislandback.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
