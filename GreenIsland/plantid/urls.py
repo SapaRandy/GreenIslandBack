@@ -8,4 +8,5 @@ urlpatterns = [
     path('meteo/', WeatherAPIView.as_view(), name='meteo'),
     path('meteosemaine/', WeatherWeekAPIView.as_view(), name='meteo-week'),
     path('arduino/', ArduinoDataView.as_view(), name='arduino-infos'),
+    path('waterpump/', WaterPumpView.as_view(), name='water-pump'),
 ]

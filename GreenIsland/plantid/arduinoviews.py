@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from datetime import datetime
 from .firebase import db
+import requests
+from django.http import JsonResponse
 
 
 class ArduinoDataView(APIView):
     def post(self, request):
-        # Récupère les données envoyées par l'Arduino
         data = {
             "temperature": request.data.get('temperature'),
             "humidite": request.data.get('humidite'),
@@ -17,7 +18,22 @@ class ArduinoDataView(APIView):
             "date_heure": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         }
 
-        # Enregistre dans une collection Firestore (par exemple "mesures")
         db.collection('mesures').add(data)
 
         return Response({'message': 'Données reçues'}, status=200)
+
+class WaterPumpView(APIView):
+    def post(self, request):
+        ARDUINO_IP = "192.168.1.50"  # Remplace par l'IP affichée par ton Arduino
+
+        def pump_control(request):
+            state = request.GET.get('state', 'off')
+            if state == 'on':
+                url = f"http://{ARDUINO_IP}/on"
+            else:
+                url = f"http://{ARDUINO_IP}/off"
+            try:
+                resp = requests.get(url, timeout=2)
+                return JsonResponse({'result': resp.text})
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
