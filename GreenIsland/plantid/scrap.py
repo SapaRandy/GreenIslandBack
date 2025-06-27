@@ -52,6 +52,7 @@ def scrap_plant(name):
         return None  # Rien trouvé
     finally:
         driver.quit()
+
 def insert_plant_in_firestore(plant_data):
     plant_name = plant_data.get('plant')
     plant_info = plant_data.get('texte')

@@ -114,20 +114,3 @@ class WeatherWeekAPIView(APIView):
             return Response(data.get('daily',[]), status= 200)
         except requests.RequestException:
             return Response({'error': 'Erreur API météo.'}, status=503)
-
-class ArduinoDataView(APIView):
-    def post(self, request):
-        temperature = request.data.get('temperature')
-        humidite = request.data.get('humidite')
-        pression = request.data.get('pression')
-        sol = request.data.get('sol')
-        niveau_eau = request.data.get('niveau_eau')
-
-        print(f"Température: {temperature} °C")
-        print(f"Humidité: {humidite} %")
-        print(f"Pression: {pression} hPa")
-        print(f"Humidité sol: {sol} %")
-        print(f"Niveau d'eau: {niveau_eau} cm")
-
-
-        return Response({'message': 'Données reçues'}, status=200)
