@@ -30,13 +30,7 @@ class PlantIdentifyView(APIView):
 
         data = response.json()
         try:
-            vernacular_names = data['results'][0]['species'].get('vernacularNames', [])
-            french_names = [name['name'] for name in vernacular_names if name.get('language') == 'fr']
-            best_match = french_names[0] if french_names else None
-
-            if not best_match:
-                common_names = data['results'][0]['species'].get('commonNames', [])
-                best_match = common_names[0] if common_names else None
+            best_match = data['results'][0]['species']['scientificNameWithoutAuthor']
         except (KeyError, IndexError):
             best_match = None
 
