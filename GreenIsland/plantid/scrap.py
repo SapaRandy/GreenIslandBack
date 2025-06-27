@@ -30,6 +30,7 @@ def scrap_plant(name):
     try:
         # Essaye d'abord le nom complet
         names_to_try = [name] + name.split()
+        names_to_try = [n.lower() for n in names_to_try]
         for n in names_to_try:
             url = f"https://jaime-jardiner.ouest-france.fr/{n}/"
             driver.get(url)
