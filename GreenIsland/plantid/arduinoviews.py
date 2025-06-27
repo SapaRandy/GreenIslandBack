@@ -24,16 +24,16 @@ class ArduinoDataView(APIView):
 
 class WaterPumpView(APIView):
     def post(self, request):
-        ARDUINO_IP = "192.168.1.50"  # Remplace par l'IP affichée par ton Arduino
+        ARDUINO_IP = "192.168.1.50"  # À adapter
 
-        def pump_control(request):
-            state = request.GET.get('state', 'off')
-            if state == 'on':
-                url = f"http://{ARDUINO_IP}/on"
-            else:
-                url = f"http://{ARDUINO_IP}/off"
-            try:
-                resp = requests.get(url, timeout=2)
-                return JsonResponse({'result': resp.text})
-            except Exception as e:
-                return JsonResponse({'error': str(e)}, status=500)
+        state = request.data.get('state', 'off')
+        if state == 'on':
+            url = f"http://{ARDUINO_IP}/on"
+        else:
+            url = f"http://{ARDUINO_IP}/off"
+
+        try:
+            resp = requests.get(url, timeout=2)
+            return Response({'result': resp.text})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
