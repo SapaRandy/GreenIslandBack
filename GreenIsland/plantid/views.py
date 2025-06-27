@@ -114,3 +114,9 @@ class WeatherWeekAPIView(APIView):
             return Response(data.get('daily',[]), status= 200)
         except requests.RequestException:
             return Response({'error': 'Erreur API météo.'}, status=503)
+
+class ArduinoDataView(APIView):
+    def post(self, request):
+        valeur = request.data.get('valeur')
+        print(f"Valeur reçue de l'Arduino: {valeur}")
+        return Response({'message': 'Donnée reçue'}, status=200)
