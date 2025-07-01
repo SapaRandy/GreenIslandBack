@@ -39,21 +39,30 @@ class PlantIdentifyView(APIView):
 class PlantScrapAPIView(APIView):
     def get(self, request, *args, **kwargs):
 
-        name = request.query_params.get('name')
+        name = request.query_params.get('name').lower()
+        words = name.split()
         if not name:
             return Response({"error": "Paramètre 'name' manquant."}, status=400)
         try:
+            for word in words:
+                doc_ref = db.collection('plants_data').document(word)
+                doc = doc_ref.get()
+                if doc.exists:
+                    return Response(doc.to_dict())
+                texte = scrap_plant(word)
+                if texte:
+                    insert_plant_in_firestore({"plant": word, "texte": texte})
+                    return Response({"plant": word, "data": texte})
+
             doc_ref = db.collection('plants_data').document(name)
             doc = doc_ref.get()
             if doc.exists:
                 return Response(doc.to_dict())
             texte = scrap_plant(name)
-            if not texte:
-                return Response({"error": "Aucun texte trouvé."}, status=404)
-            success = insert_plant_in_firestore({"plant": name, "texte": texte})
-            if not success:
-                return Response({"error": "Erreur lors de l'insertion en base."}, status=500)
-            return Response({"plant": name, "data": texte})
+            if texte:
+                insert_plant_in_firestore({"plant": name, "texte": texte})
+                return Response({"plant": name, "data": texte})
+            return Response({"error": "Aucun texte trouvé."}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 

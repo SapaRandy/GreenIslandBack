@@ -29,25 +29,15 @@ def scrap_plant(name):
 
     try:
         # Essaye d'abord le nom complet
-        names_to_try = [name] + name.split()
-        names_to_try = [n.lower() for n in names_to_try]
-        for n in names_to_try:
-            url = f"https://jaime-jardiner.ouest-france.fr/{n}/"
-            driver.get(url)
-            time.sleep(2)
-
-            # Vérifie si la page existe (par exemple, présence d'un titre spécifique)
-            if "Page non trouvée" in driver.page_source or "404" in driver.title:
-                continue  # Page inexistante, on passe au mot suivant
-
-            try:
-                xpath = "//h2[contains(text(), 'Type de plante')]/following-sibling::p[1]"
-                element = driver.find_element(By.XPATH, xpath)
-                texte = element.text.strip()
-                if texte:
-                    return parse_plant_info(texte)
-            except Exception:
-                continue  # Élément non trouvé, on essaye le mot suivant
+        url = f"https://jaime-jardiner.ouest-france.fr/{name}/"
+        driver.get(url)
+        time.sleep(2)
+        xpath = "//h2[contains(text(), 'Type de plante')]/following-sibling::p[1]"
+        element = driver.find_element(By.XPATH, xpath)
+        texte = element.text.strip()
+        return parse_plant_info(texte)
+    except Exception as e:
+        return None
 
         return None  # Rien trouvé
     finally:
