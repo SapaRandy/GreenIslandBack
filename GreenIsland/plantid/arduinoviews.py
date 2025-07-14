@@ -24,7 +24,7 @@ class ArduinoDataView(APIView):
 
 class WaterPumpView(APIView):
     def post(self, request):
-        ARDUINO_IP = "192.168.1.50"  # À adapter
+        ARDUINO_IP = "172.20.10.6"  # À adapter
 
         state = request.data.get('state', 'off')
         if state == 'on':
