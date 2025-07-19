@@ -1,11 +1,29 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser
 from datetime import datetime
 from .firebase import db
 import requests
-from django.http import JsonResponse
 
+class ArduinoInit(APIView):
+    def post(self, request):
+        uniqueID = request.data.get('uniqueID')
+        ip = request.data.get('IP')
+
+        if not uniqueID or not ip:
+            return Response({"error": "uniqueID and IP are required."}, status=400)
+
+        doc_ref = db.collection('devices').document(uniqueID)
+        doc = doc_ref.get()
+
+        try:
+            if doc.exists:
+                doc_ref.update({"IP": ip})
+                return Response(status=200)
+            else:
+                db.collection('devices').document(uniqueID).set(ip)
+                return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
 
 class ArduinoDataView(APIView):
     def post(self, request):
