@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
 from .firebase import db
+from firebase_admin import firestore
 import requests
 
 class ArduinoInit(APIView):
@@ -20,7 +21,11 @@ class ArduinoInit(APIView):
                 doc_ref.update({"IP": ip})
                 return Response(status=200)
             else:
-                db.collection('devices').document(uniqueID).set(ip)
+                db.collection('devices').document(uniqueID).set({
+                    "IP" :ip,
+                    'created_at': firestore.SERVER_TIMESTAMP,
+                    'status': 'free'
+                })
                 return Response(status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
