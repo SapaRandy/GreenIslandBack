@@ -37,6 +37,15 @@ class ArduinoConnect(APIView):
         device_ids = [doc.id for doc in results]
         return Response(device_ids, status=200)
 
+    def post(self,request):
+        try:
+            db.collection("devices").document(request.data.get("uniqueID")).update({
+                'status':'active'
+            })
+            return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 
 class ArduinoDataView(APIView):
     def post(self, request):
