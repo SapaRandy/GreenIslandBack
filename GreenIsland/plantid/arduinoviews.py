@@ -30,6 +30,14 @@ class ArduinoInit(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+
+class ArduinoConnect(APIView):
+    def get(self, request):
+        results = db.collection("devices").where("status", "==", "free").stream()
+        device_ids = [doc.id for doc in results]
+        return Response(device_ids, status=200)
+
+
 class ArduinoDataView(APIView):
     def post(self, request):
         data = {
