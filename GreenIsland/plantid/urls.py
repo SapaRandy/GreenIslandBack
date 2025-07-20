@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import *
-from .arduinoviews import *
+from .arduino_views import *
 
 urlpatterns = [
     path('identify/', PlantIdentifyView.as_view(), name='identify-plant'),

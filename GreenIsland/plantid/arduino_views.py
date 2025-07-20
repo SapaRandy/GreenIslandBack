@@ -1,11 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
-from .firebase import db
 from firebase_admin import firestore
 import requests
+from .arduino_service import *
 
-class ArduinoInit(APIView):
+class ArduinoInitView(APIView):
     def post(self, request):
         uniqueID = request.data.get('uniqueID')
         ip = request.data.get('IP')
@@ -31,8 +31,8 @@ class ArduinoInit(APIView):
             return Response({"error": str(e)}, status=500)
 
 
-class ArduinoConnect(APIView):
-    def get(self, request):
+class ArduinoConnectView(APIView):
+    def get(self):
         results = db.collection("devices").where("status", "==", "free").stream()
         device_ids = [doc.id for doc in results]
         return Response(device_ids, status=200)
@@ -49,18 +49,26 @@ class ArduinoConnect(APIView):
 
 class ArduinoDataView(APIView):
     def post(self, request):
-        data = {
-            "temperature": request.data.get('temperature'),
-            "humidite": request.data.get('humidite'),
-            "pression": request.data.get('pression'),
-            "sol": request.data.get('sol'),
-            "niveau_eau": request.data.get('niveau_eau'),
-            "date_heure": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        }
+        uniqueID = request.data.get('uniqueID')
+        doc_name = get_document_name_by_field("plants","deviceId",uniqueID)
 
-        db.collection('mesures').add(data)
+        if doc_name:
+            data = {
+                "temperature": request.data.get('temperature'),
+                "humidite": request.data.get('humidite'),
+                "pression": request.data.get('pression'),
+                "sol": request.data.get('sol'),
+                "niveau_eau": request.data.get('niveau_eau'),
+                "date_heure": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "plantId": doc_name
+            }
 
-        return Response({'message': 'Données reçues'}, status=200)
+            db.collection('mesures').add(data)
+
+            return Response({'message': 'Données reçues'}, status=200)
+        else:
+            return Response({'message': 'Appareil non associé à une plante'},status=500)
+
 
 class WaterPumpView(APIView):
     def post(self, request):
@@ -77,3 +85,26 @@ class WaterPumpView(APIView):
             return Response({'result': resp.text})
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+
+class AutoWateringView(APIView):
+    def post(self,request):
+        uniqueID = request.data.get('uniqueID')
+        doc_name = get_document_name_by_field("plants", "deviceId", uniqueID)
+        if not doc_name:
+            return Response({'message': 'Appareil non associé à une plante'}, status=400)
+
+        plant_doc = db.collection("plants").document(doc_name).get()
+        if not plant_doc.exists:
+            return Response({'message': 'Document plante non trouvé'}, status=404)
+
+        plant_data = plant_doc.to_dict()
+        auto_mode = plant_data.get("auto", False)
+
+        if not auto_mode:
+            return Response({'message': 'Mode auto désactivé'}, status=400)
+
+        watering = get_watering_info_from_plant_doc(doc_name)
+        if not watering:
+            return Response({'message': 'Impossible de récupérer les données d’arrosage'}, status=500)
+
+        return Response({'watering': watering}, status=200)
