@@ -5,7 +5,7 @@ import requests
 import os
 from .firebase import db
 from dotenv import load_dotenv
-from .scrap import scrap_plant, insert_plant_in_firestore
+from .plant_utils import scrap_plant, insert_plant_in_firestore
 
 load_dotenv()
 PLANTNET_API_URL = "https://my-api.plantnet.org/v2/identify/all"

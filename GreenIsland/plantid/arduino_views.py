@@ -4,6 +4,9 @@ from datetime import datetime
 from firebase_admin import firestore
 import requests
 from .arduino_service import *
+import os
+
+METEO_API_KEY = os.getenv('METEO_API_KEY')
 
 class ArduinoInitView(APIView):
     def post(self, request):
@@ -38,9 +41,11 @@ class ArduinoConnectView(APIView):
         return Response(device_ids, status=200)
 
     def post(self,request):
+        userid = request.data.get('userid')
         try:
             db.collection("devices").document(request.data.get("uniqueID")).update({
-                'status':'active'
+                'status':'active',
+                'userId':userid
             })
             return Response(status=200)
         except Exception as e:
@@ -98,13 +103,35 @@ class AutoWateringView(APIView):
             return Response({'message': 'Document plante non trouvé'}, status=404)
 
         plant_data = plant_doc.to_dict()
-        auto_mode = plant_data.get("auto", False)
-
+        auto_mode = plant_data.get("auto", True)
         if not auto_mode:
             return Response({'message': 'Mode auto désactivé'}, status=400)
 
+        outside_field = plant_data.get("isOutdoor",False)
+        if outside_field:
+            url = 'https://api.openweathermap.org/data/2.5/weather'
+            params = {
+                'lat': 48.9535,
+                'lon': 2.3168,
+                'appid': METEO_API_KEY,
+                'units': 'metric',
+                'lang': 'fr'
+            }
+            try:
+                response = requests.get(url, params=params, timeout=5)
+                response.raise_for_status()
+            except requests.RequestException as e:
+                return Response({'message': 'Erreur lors de la connexion à l’API météo'}, status=503)
+            if response.status_code == 200:
+                data = response.json()
+                weather_main = data['weather'][0]['main']
+                if weather_main == "Rain":
+                    return Response({'message': 'Pluie attendue, arrosage annulé'},status=409)
+            else:
+                print(f"Erreur lors de la requête : {response.status_code}")
+
         watering = get_watering_info_from_plant_doc(doc_name)
         if not watering:
-            return Response({'message': 'Impossible de récupérer les données d’arrosage'}, status=500)
+            return Response({'message': 'Impossible de récupérer les données d’arrosage'}, status=503)
 
         return Response({'watering': watering}, status=200)
