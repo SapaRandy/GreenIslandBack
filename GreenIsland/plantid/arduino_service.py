@@ -2,9 +2,9 @@ from .firebase import db
 import re
 
 def get_document_name_by_field(collection_name,field_name,field_value):
-    plants_ref = db.collection(collection_name)
-    query = plants_ref.where(field_name, '==', field_value)
-    docs = query.stream()
+    docs = (db.collection(collection_name)
+             .where(field_name, '==', field_value)
+             .stream())
 
     for doc in docs:
         return doc.id  # On renvoie le nom/ID du premier document trouvé

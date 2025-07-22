@@ -13,19 +13,33 @@ PLANTNET_API_KEY = os.getenv('PLANET_API_KEY')
 
 METEO_API_KEY = os.getenv('METEO_API_KEY')
 
-class PlantConnectView(APIView):
-    def get(self):
-        results = db.collection("devices").where("status", "==", "free").stream()
-        device_ids = [doc.id for doc in results]
-        return Response(device_ids, status=200)
-
+class UserDeviceListView(APIView):
     def post(self,request):
-        userid = request.data.get('userid')
+        userid = request.data.get('userId')
+        try:
+            results = (db.collection("devices")
+                       .where("status", "==", "active")
+                       .where("userId","==",userid)
+                       .stream())
+
+            devices_without_plantid = [
+                doc.id for doc in results
+                if 'plantId' not in doc.to_dict()
+            ]
+            return Response(devices_without_plantid, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+class PlantConnectView(APIView):
+    def post(self, request):
         try:
             db.collection("devices").document(request.data.get("uniqueID")).update({
-                'status':'active',
-                'userId':userid
+                'plantId':request.data.get("plantId")
             })
+            db.collection("plants").document(request.data.get("plantId")).update({
+                'deviceId':request.data.get("uniqueID")
+            })
+
             return Response(status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
