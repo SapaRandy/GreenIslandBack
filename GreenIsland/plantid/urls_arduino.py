@@ -6,5 +6,6 @@ urlpatterns = [
     path('waterpump/', WaterPumpView.as_view(), name='water-pump'),
     path('init/', ArduinoInitView.as_view(), name='init'),
     path('connect/', ArduinoConnectView.as_view(), name='connect'),
+    path('devicelist/', ListUserDevice.as_view(), name='devicelist'),
     path('limit/', AutoWateringView.as_view(), name='limit'),
 ]

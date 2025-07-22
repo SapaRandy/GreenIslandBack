@@ -35,19 +35,39 @@ class ArduinoInitView(APIView):
 
 
 class ArduinoConnectView(APIView):
-    def get(self):
-        results = db.collection("devices").where("status", "==", "free").stream()
-        device_ids = [doc.id for doc in results]
-        return Response(device_ids, status=200)
+    def get(self,request):
+        try:
+            results = (db.collection("devices")
+                   .where("status", "==", "free")
+                   .stream())
+
+            device_ids = [doc.id for doc in results]
+            return Response(device_ids, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
 
     def post(self,request):
-        userid = request.data.get('userid')
+        userid = request.data.get('userId')
         try:
             db.collection("devices").document(request.data.get("uniqueID")).update({
                 'status':'active',
                 'userId':userid
             })
             return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+class ListUserDevice(APIView):
+    def get(self,request):
+        try:
+            userid = request.data.get('userId')
+            results = (db.collection("devices")
+                       .where("status", "==", "active")
+                       .where("userId","==",userid)
+                       .stream())
+            device_ids = [doc.id for doc in results]
+            return Response(device_ids, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 

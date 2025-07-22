@@ -13,6 +13,23 @@ PLANTNET_API_KEY = os.getenv('PLANET_API_KEY')
 
 METEO_API_KEY = os.getenv('METEO_API_KEY')
 
+class PlantConnectView(APIView):
+    def get(self):
+        results = db.collection("devices").where("status", "==", "free").stream()
+        device_ids = [doc.id for doc in results]
+        return Response(device_ids, status=200)
+
+    def post(self,request):
+        userid = request.data.get('userid')
+        try:
+            db.collection("devices").document(request.data.get("uniqueID")).update({
+                'status':'active',
+                'userId':userid
+            })
+            return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 class PlantIdentifyView(APIView):
     parser_classes = [MultiPartParser]
 
