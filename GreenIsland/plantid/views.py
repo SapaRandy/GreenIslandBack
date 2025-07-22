@@ -6,6 +6,7 @@ import os
 from .firebase import db
 from dotenv import load_dotenv
 from .plant_utils import scrap_plant, insert_plant_in_firestore
+from firebase_admin import firestore
 
 load_dotenv()
 PLANTNET_API_URL = "https://my-api.plantnet.org/v2/identify/all"
@@ -13,13 +14,13 @@ PLANTNET_API_KEY = os.getenv('PLANET_API_KEY')
 
 METEO_API_KEY = os.getenv('METEO_API_KEY')
 
-class UserDeviceListView(APIView):
-    def post(self,request):
-        userid = request.data.get('userId')
+
+class PlantConnectView(APIView):
+    def get(self,userId=None):
         try:
             results = (db.collection("devices")
                        .where("status", "==", "active")
-                       .where("userId","==",userid)
+                       .where("userId","==",userId)
                        .stream())
 
             devices_without_plantid = [
@@ -30,7 +31,6 @@ class UserDeviceListView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
-class PlantConnectView(APIView):
     def post(self, request):
         try:
             db.collection("devices").document(request.data.get("uniqueID")).update({
@@ -41,6 +41,24 @@ class PlantConnectView(APIView):
             })
 
             return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+    def delete(self,uniqueId=None,plantId=None):
+        try:
+            if not uniqueId or not plantId:
+                return Response({"error": "Les champs uniqueID et plantId sont requis"}, status=400)
+
+            db.collection("devices").document(uniqueId).update({
+                'plantId': firestore.DELETE_FIELD  # ou None si tu préfères
+            })
+
+            db.collection("plants").document(plantId).update({
+                'deviceId': firestore.DELETE_FIELD  # ou None
+            })
+
+            return Response({"message": "Association supprimée"}, status=200)
+
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
