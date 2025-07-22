@@ -58,6 +58,19 @@ class ArduinoConnectView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+    def delete(self, request,uniqueID=None):
+        if not uniqueID:
+            return Response({"error": "uniqueID manquant"}, status=400)
+
+        try:
+            db.collection("devices").document(uniqueID).update({
+                'status': 'free',
+                'userId': firestore.DELETE_FIELD
+            })
+            return Response(status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 class ListUserDevice(APIView):
     def get(self,request):
         try:
