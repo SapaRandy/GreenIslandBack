@@ -16,7 +16,7 @@ METEO_API_KEY = os.getenv('METEO_API_KEY')
 
 
 class PlantConnectView(APIView):
-    def get(self,userId=None):
+    def get(self,request,userId=None):
         try:
             results = (db.collection("devices")
                        .where("status", "==", "active")
@@ -44,11 +44,12 @@ class PlantConnectView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-    def delete(self,uniqueId=None,plantId=None):
+    def delete(self,request,uniqueId=None,plantId=None):
         try:
             if not uniqueId or not plantId:
                 return Response({"error": "Les champs uniqueID et plantId sont requis"}, status=400)
 
+            # Suppression (ou remise à None) des liens croisés
             db.collection("devices").document(uniqueId).update({
                 'plantId': firestore.DELETE_FIELD  # ou None si tu préfères
             })
