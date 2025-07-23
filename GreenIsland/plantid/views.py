@@ -114,6 +114,39 @@ class PlantDataAPIView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+
+class PlantDataView(APIView):
+    def get(self, request, plantId=None):
+        if not plantId:
+            return Response({"error": "Paramètre plantId manquant"}, status=400)
+
+        try:
+            # Étape 1 : Obtenir le document de la plante
+            plant_doc = db.collection('plants').document(plantId).get()
+            if not plant_doc.exists:
+                return Response({"error": "Plante introuvable"}, status=404)
+
+            plant_data = plant_doc.to_dict()
+
+            data_id = plant_data.get('plantId')  # ou autre champ, selon ton modèle
+
+            if not data_id:
+                return Response({"error": "Aucune donnée associée à cette plante"}, status=404)
+
+            # Étape 2 : Récupérer le document dans plants_data
+            data_doc = db.collection("plants_data").document(data_id).get()
+
+            if not data_doc.exists:
+                return Response({"error": "Données enrichies non trouvées"}, status=404)
+
+            data = data_doc.to_dict()
+
+            return Response(data, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
 class PlantScrapAPIView(APIView):
     def get(self, request, *args, **kwargs):
 
