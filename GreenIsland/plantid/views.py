@@ -86,6 +86,34 @@ class PlantIdentifyView(APIView):
 
         return Response({'plant_name': best_match})
 
+class PlantDataAPIView(APIView):
+    def get(self,request,plantId=None):
+        if not plantId:
+            return Response({"error": "plantId manquant"}, status=400)
+
+        try:
+            # Récupérer la dernière mesure pour cette plante
+            query = (
+                db.collection('mesures')
+                .where('plantId', '==', plantId)
+                .order_by('date_heure', direction=firestore.Query.DESCENDING)
+                .limit(1)
+            )
+
+            docs = query.stream()
+
+            # Extraire le premier (et seul) document
+            for doc in docs:
+                data = doc.to_dict()
+                data['id'] = doc.id
+                return Response(data, status=200)
+
+            # Aucun document trouvé
+            return Response({"message": "Aucune mesure trouvée"}, status=404)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 class PlantScrapAPIView(APIView):
     def get(self, request, *args, **kwargs):
 

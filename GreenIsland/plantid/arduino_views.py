@@ -5,6 +5,8 @@ from firebase_admin import firestore
 import requests
 from .arduino_service import *
 import os
+import pytz  # très recommandé pour la gestion des fuseaux horaires
+
 
 METEO_API_KEY = os.getenv('METEO_API_KEY')
 
@@ -97,7 +99,7 @@ class ArduinoDataView(APIView):
                 "pression": request.data.get('pression'),
                 "sol": request.data.get('sol'),
                 "niveau_eau": request.data.get('niveau_eau'),
-                "date_heure": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "date_heure": datetime.now(pytz.UTC),
                 "plantId": doc_name
             }
 
