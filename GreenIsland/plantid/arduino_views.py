@@ -142,7 +142,7 @@ class AutoWateringView(APIView):
         if not auto_mode:
             return Response({'message': 'Mode auto désactivé'}, status=400)
 
-        outside_field = plant_data.get("isOutdoor",False)
+        """outside_field = plant_data.get("isOutdoor",False)
         if outside_field:
             url = 'https://api.openweathermap.org/data/2.5/weather'
             params = {
@@ -163,7 +163,7 @@ class AutoWateringView(APIView):
                 if weather_main == "Rain":
                     return Response({'message': 'Pluie attendue, arrosage annulé'},status=409)
             else:
-                print(f"Erreur lors de la requête : {response.status_code}")
+                print(f"Erreur lors de la requête : {response.status_code}")"""
         watering, error = get_watering_info_from_plant_doc(doc_name)
         if error:
             return Response({'message': error}, status=503)
