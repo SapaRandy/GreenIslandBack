@@ -153,7 +153,7 @@ class AutoWateringView(APIView):
                 'lang': 'fr'
             }
             try:
-                response = requests.get(url, params=params, timeout=5)
+                response = requests.get(url, params=params)
                 response.raise_for_status()
             except requests.RequestException as e:
                 return Response({'message': 'Erreur lors de la connexion à l’API météo'}, status=503)
@@ -164,9 +164,8 @@ class AutoWateringView(APIView):
                     return Response({'message': 'Pluie attendue, arrosage annulé'},status=409)
             else:
                 print(f"Erreur lors de la requête : {response.status_code}")
-
-        watering = get_watering_info_from_plant_doc(doc_name)
-        if not watering:
-            return Response({'message': 'Impossible de récupérer les données d’arrosage'}, status=503)
+        watering, error = get_watering_info_from_plant_doc(doc_name)
+        if error:
+            return Response({'message': error}, status=503)
 
         return Response({'watering': watering}, status=200)
