@@ -1,0 +1,1 @@
+web: gunicorn GreenIsland.wsgi --log-file -

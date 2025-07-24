@@ -1,0 +1,11 @@
+.env
+serviceAccountKey.json
+
+venv/
+*.sqlite3
+# Fichiers de migration compilés
+*.pyc
+__pycache__/
+
+vscode/
+idea/
